@@ -1,8 +1,10 @@
 package swextreload
 
+
 import (
 	"context"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/chromedp/cdproto/target"
@@ -17,7 +19,7 @@ func Reload(
 ) error {
 	allocatorContext, cancel := chromedp.NewRemoteAllocator(
 		context.Background(),
-		"ws://127.0.0.1:55755/devtools/browser/4536efdf-6ddf-40b6-9a16-258a1935d866",
+		url,
 	)
 	defer cancel()
 
@@ -32,9 +34,11 @@ func Reload(
 	log.Printf("Targets: %#v", targets)
 	println()
 
+	extensionURL := "chrome-extension://" + extensionID + "/"
+
 	var targetID target.ID
 	for _, target := range targets {
-		if target.URL == "chrome-extension://imcibeelfmccdpnnlemllnepgbfdbkgo/background.bundle.js" {
+		if strings.HasPrefix(target.URL, extensionURL) {
 			log.Printf("Target: %#v", target)
 			targetID = target.TargetID
 			break
@@ -83,7 +87,7 @@ func Reload(
 	println()
 
 	for _, target := range targets {
-		if target.URL == "chrome-extension://imcibeelfmccdpnnlemllnepgbfdbkgo/background.bundle.js" {
+		if strings.HasPrefix(target.URL, extensionURL) {
 			log.Printf("Target: %#v", target)
 			targetID = target.TargetID
 			break
