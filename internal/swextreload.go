@@ -1,8 +1,9 @@
 package swextreload
 
 // TODO
-type SwextreloadOption = func(*)
-
-// TODO
-func Reload(url string, opts ...SwextreloadOption) error {
+func Reload(
+	url string,
+	extensionID string,
+	shouldReloadTab bool,
+) error {
 }
