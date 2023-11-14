@@ -80,12 +80,7 @@ func reloadExtension(
 	var runtimeResp []byte
 	err = chromedp.Run(
 		targetCtx,
-		// chromedp.Evaluate(`chrome.runtime.reload();`, &runtimeResp),
-		// chromedp.Evaluate(`chrome.tabs.reload();`, &tabsResp),
-		// chromedp.Evaluate(`chrome.runtime.reload();`, nil),
-		// chromedp.EvaluateAsDevTools(`chrome.runtime.reload();`, nil),
 		chromedp.Evaluate(`chrome.runtime.reload();`, nil),
-		// chromedp.Evaluate(`chrome.tabs.reload();`, nil),
 	)
 	if err != nil {
 		return fmt.Errorf(
@@ -94,17 +89,6 @@ func reloadExtension(
 			err,
 		)
 	}
-
-	// var tabsResp []byte
-	// err = chromedp.Run(
-	// 	targetCtx,
-	// 	// chromedp.Evaluate(`chrome.tabs.reload();`, &tabsResp),
-	// 	// chromedp.Evaluate(`chrome.tabs.reload();`, nil),
-	// 	chromedp.EvaluateAsDevTools(`chrome.tabs.reload();`, nil),
-	// )
-	// if err != nil {
-	// 	log.Fatalf("error: run tabs: %v", err)
-	// }
 
 	if isDebug {
 		log.Printf("Runtime: %v", string(runtimeResp))
