@@ -19,7 +19,7 @@ func SetDebugOn() {
 	isDebug = true
 }
 
-// TODO
+// Reload reloads the extensions in extensionIDs.
 func Reload(
 	url string,
 	extensionIDs []string,
@@ -36,7 +36,8 @@ func Reload(
 	return nil
 }
 
-// TODO
+// reloadExtension reloads the extension extensionID. If shouldReloadTab is
+// true, also reload the current tab.
 func reloadExtension(
 	url string,
 	extensionID string,
