@@ -31,6 +31,12 @@ func main() {
 				Type:        "bool",
 				Description: "show the program version",
 			},
+			{
+				LongName:     "debug",
+				Type:         "bool",
+				DefaultValue: false,
+				Description:  "print debug output",
+			},
 		},
 		Positionals: []claw.Positional{
 			{
@@ -46,8 +52,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("args: %#v", args)
-
 	socket_url, ok := args["socket-url"].(string)
 	if !ok {
 		fmt.Fprintln(os.Stderr, "error: '--socket-url' is required")
@@ -58,6 +62,15 @@ func main() {
 	if len(extension_ids) == 0 {
 		fmt.Fprintln(os.Stderr, "error: missing extension IDs")
 		os.Exit(sysexits.Usage)
+	}
+
+	isDebug := args["debug"].(bool)
+	if isDebug {
+		swextreload.SetDebugOn()
+	}
+
+	if isDebug {
+		log.Printf("args: %#v", args)
 	}
 
 	err = swextreload.Reload(

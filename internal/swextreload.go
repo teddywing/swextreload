@@ -11,6 +11,14 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+// isDebug controls whether debug printing is enabled.
+var isDebug = false
+
+// SetDebugOn turns on debug printing.
+func SetDebugOn() {
+	isDebug = true
+}
+
 // TODO
 func Reload(
 	url string,
@@ -48,15 +56,19 @@ func reloadExtension(
 		return fmt.Errorf("swextreload: can't get targets: %v", err)
 	}
 
-	log.Printf("Targets: %#v", targets)
-	println()
+	if isDebug {
+		log.Printf("Targets: %#v", targets)
+	}
 
 	extensionURL := "chrome-extension://" + extensionID + "/"
 
 	var targetID target.ID
 	for _, target := range targets {
 		if strings.HasPrefix(target.URL, extensionURL) {
-			log.Printf("Target: %#v", target)
+			if isDebug {
+				log.Printf("Target: %#v", target)
+			}
+
 			targetID = target.TargetID
 			break
 		}
@@ -94,8 +106,9 @@ func reloadExtension(
 	// 	log.Fatalf("error: run tabs: %v", err)
 	// }
 
-	log.Printf("Runtime: %v", string(runtimeResp))
-	// log.Printf("Tabs: %v", string(tabsResp))
+	if isDebug {
+		log.Printf("Runtime: %v", string(runtimeResp))
+	}
 
 	time.Sleep(200 * time.Millisecond)
 
@@ -108,12 +121,16 @@ func reloadExtension(
 		)
 	}
 
-	log.Printf("Targets: %#v", targets)
-	println()
+	if isDebug {
+		log.Printf("Targets: %#v", targets)
+	}
 
 	for _, target := range targets {
 		if strings.HasPrefix(target.URL, extensionURL) {
-			log.Printf("Target: %#v", target)
+			if isDebug {
+				log.Printf("Target: %#v", target)
+			}
+
 			targetID = target.TargetID
 			break
 		}
@@ -135,7 +152,9 @@ func reloadExtension(
 		)
 	}
 
-	log.Printf("Tabs: %v", string(tabsResp))
+	if isDebug {
+		log.Printf("Tabs: %v", string(tabsResp))
+	}
 
 	return nil
 }
