@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 
 	"git.sr.ht/~liliace/claw"
 	swextreload "gopkg.teddywing.com/swextreload/internal"
@@ -31,10 +33,11 @@ func main() {
 		},
 		Positionals: []claw.Positional{
 			{
-				Name:        "extension_id",
-				Type:        "string",
-				Repeating:   true,
-				Description: "extensions to reload",
+				Name:         "extension_id",
+				Type:         "string",
+				Repeating:    true,
+				DefaultValue: []string{},
+				Description:  "extensions to reload",
 			},
 		},
 	})
@@ -43,11 +46,26 @@ func main() {
 	}
 
 	log.Printf("args: %#v", args)
+
+	socket_url, ok := args["socket-url"].(string)
+	if !ok {
+		fmt.Println("error: '--socket-url' is required")
+		os.Exit(64)
+	}
+
+	extension_ids := args["extension_id"].([]string)
+	if len(extension_ids) == 0 {
+		fmt.Println("error: missing extension IDs")
+		os.Exit(64)
+	}
+
 	return
 
 	err = swextreload.Reload(
-		"ws://127.0.0.1:55755/devtools/browser/4536efdf-6ddf-40b6-9a16-258a1935d866",
-		"imcibeelfmccdpnnlemllnepgbfdbkgo",
+		// "ws://127.0.0.1:55755/devtools/browser/4536efdf-6ddf-40b6-9a16-258a1935d866",
+		// "imcibeelfmccdpnnlemllnepgbfdbkgo",
+		socket_url,
+		extension_ids[0],
 		true,
 	)
 	if err != nil {
