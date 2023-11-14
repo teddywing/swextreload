@@ -21,9 +21,10 @@ func main() {
 				Description: "DevTools protocol WebSocket URL",
 			},
 			{
-				LongName:    "reload-current-tab",
-				Type:        "bool",
-				Description: "pass this to reload the active Chrome tab",
+				LongName:     "reload-current-tab",
+				Type:         "bool",
+				DefaultValue: false,
+				Description:  "pass this to reload the active Chrome tab",
 			},
 			{
 				LongName:    "version",
@@ -63,6 +64,8 @@ func main() {
 		os.Exit(sysexits.Usage)
 	}
 
+	shouldReloadTab := args["reload-current-tab"].(bool)
+
 	extension_ids := args["extension_id"].([]string)
 	if len(extension_ids) == 0 {
 		fmt.Fprintln(os.Stderr, "error: missing extension IDs")
@@ -81,7 +84,7 @@ func main() {
 	err = swextreload.Reload(
 		socket_url,
 		extension_ids,
-		true,
+		shouldReloadTab,
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: can't reload extension: %v\n", err)

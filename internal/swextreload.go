@@ -110,50 +110,52 @@ func reloadExtension(
 		log.Printf("Runtime: %v", string(runtimeResp))
 	}
 
-	time.Sleep(200 * time.Millisecond)
+	if shouldReloadTab {
+		time.Sleep(200 * time.Millisecond)
 
-	targets, err = chromedp.Targets(ctx)
-	if err != nil {
-		return fmt.Errorf(
-			"swextreload: can't get targets for '%s' tab reload: %v",
-			extensionID,
-			err,
-		)
-	}
-
-	if isDebug {
-		log.Printf("Targets: %#v", targets)
-	}
-
-	for _, target := range targets {
-		if strings.HasPrefix(target.URL, extensionURL) {
-			if isDebug {
-				log.Printf("Target: %#v", target)
-			}
-
-			targetID = target.TargetID
-			break
+		targets, err = chromedp.Targets(ctx)
+		if err != nil {
+			return fmt.Errorf(
+				"swextreload: can't get targets for '%s' tab reload: %v",
+				extensionID,
+				err,
+			)
 		}
-	}
 
-	targetCtx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
-	defer cancel()
+		if isDebug {
+			log.Printf("Targets: %#v", targets)
+		}
 
-	var tabsResp []byte
-	err = chromedp.Run(
-		targetCtx,
-		chromedp.Evaluate(`chrome.tabs.reload();`, nil),
-	)
-	if err != nil {
-		return fmt.Errorf(
-			"swextreload: error reloading tab '%s': %v",
-			extensionID,
-			err,
+		for _, target := range targets {
+			if strings.HasPrefix(target.URL, extensionURL) {
+				if isDebug {
+					log.Printf("Target: %#v", target)
+				}
+
+				targetID = target.TargetID
+				break
+			}
+		}
+
+		targetCtx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
+		defer cancel()
+
+		var tabsResp []byte
+		err = chromedp.Run(
+			targetCtx,
+			chromedp.Evaluate(`chrome.tabs.reload();`, nil),
 		)
-	}
+		if err != nil {
+			return fmt.Errorf(
+				"swextreload: error reloading tab '%s': %v",
+				extensionID,
+				err,
+			)
+		}
 
-	if isDebug {
-		log.Printf("Tabs: %v", string(tabsResp))
+		if isDebug {
+			log.Printf("Tabs: %v", string(tabsResp))
+		}
 	}
 
 	return nil
