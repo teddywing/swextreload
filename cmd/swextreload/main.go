@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"git.sr.ht/~liliace/claw"
+	"github.com/dedelala/sysexits"
 	swextreload "gopkg.teddywing.com/swextreload/internal"
 )
 
@@ -50,13 +51,13 @@ func main() {
 	socket_url, ok := args["socket-url"].(string)
 	if !ok {
 		fmt.Println("error: '--socket-url' is required")
-		os.Exit(64)
+		os.Exit(sysexits.Usage)
 	}
 
 	extension_ids := args["extension_id"].([]string)
 	if len(extension_ids) == 0 {
 		fmt.Println("error: missing extension IDs")
-		os.Exit(64)
+		os.Exit(sysexits.Usage)
 	}
 
 	return

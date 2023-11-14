@@ -6,6 +6,7 @@ require (
 	git.sr.ht/~liliace/claw v0.1.1
 	github.com/chromedp/cdproto v0.0.0-20231011050154-1d073bb38998
 	github.com/chromedp/chromedp v0.9.3
+	github.com/dedelala/sysexits v0.0.0-20170927115716-3d3abae01efc
 )
 
 require (
