@@ -26,12 +26,17 @@ func Reload(
 	extensionIDs []string,
 	shouldReloadTab bool,
 ) error {
+	var err error
+
 	for _, extensionID := range extensionIDs {
-		return reloadExtension(
+		err = reloadExtension(
 			url,
 			extensionID,
 			shouldReloadTab,
 		)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
