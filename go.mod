@@ -2,10 +2,13 @@ module gopkg.teddywing.com/swextreload
 
 go 1.21.4
 
-require github.com/chromedp/chromedp v0.9.3
+require (
+	git.sr.ht/~liliace/claw v0.1.1
+	github.com/chromedp/cdproto v0.0.0-20231011050154-1d073bb38998
+	github.com/chromedp/chromedp v0.9.3
+)
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20231011050154-1d073bb38998 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
