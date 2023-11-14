@@ -1,6 +1,5 @@
 package swextreload
 
-
 import (
 	"context"
 	"log"
@@ -13,6 +12,23 @@ import (
 
 // TODO
 func Reload(
+	url string,
+	extensionIDs []string,
+	shouldReloadTab bool,
+) error {
+	for _, extensionID := range extensionIDs {
+		return reloadExtension(
+			url,
+			extensionID,
+			shouldReloadTab,
+		)
+	}
+
+	return nil
+}
+
+// TODO
+func reloadExtension(
 	url string,
 	extensionID string,
 	shouldReloadTab bool,

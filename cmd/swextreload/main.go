@@ -60,13 +60,9 @@ func main() {
 		os.Exit(sysexits.Usage)
 	}
 
-	return
-
 	err = swextreload.Reload(
-		// "ws://127.0.0.1:55755/devtools/browser/4536efdf-6ddf-40b6-9a16-258a1935d866",
-		// "imcibeelfmccdpnnlemllnepgbfdbkgo",
 		socket_url,
-		extension_ids[0],
+		extension_ids,
 		true,
 	)
 	if err != nil {
