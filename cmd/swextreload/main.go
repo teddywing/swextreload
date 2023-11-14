@@ -49,7 +49,12 @@ func main() {
 		},
 	})
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(
+			os.Stderr,
+			"error: failed to parse command line arguments: %v\n",
+			err,
+		)
+		os.Exit(sysexits.DataErr)
 	}
 
 	socket_url, ok := args["socket-url"].(string)
@@ -79,6 +84,7 @@ func main() {
 		true,
 	)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "error: can't reload extension: %v\n", err)
+		os.Exit(sysexits.Unavailable)
 	}
 }
