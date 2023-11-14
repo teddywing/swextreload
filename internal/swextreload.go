@@ -1,3 +1,4 @@
+// Package swextreload enables reloading Chrome extensions.
 package swextreload
 
 import (
