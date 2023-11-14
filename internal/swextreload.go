@@ -2,6 +2,7 @@ package swextreload
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -44,7 +45,7 @@ func reloadExtension(
 
 	targets, err := chromedp.Targets(ctx)
 	if err != nil {
-		log.Fatalf("error: targets: %v", err)
+		return fmt.Errorf("swextreload: can't get targets: %v", err)
 	}
 
 	log.Printf("Targets: %#v", targets)
@@ -75,7 +76,11 @@ func reloadExtension(
 		// chromedp.Evaluate(`chrome.tabs.reload();`, nil),
 	)
 	if err != nil {
-		log.Fatalf("error: run: %v", err)
+		return fmt.Errorf(
+			"swextreload: error reloading extension '%s': %v",
+			extensionID,
+			err,
+		)
 	}
 
 	// var tabsResp []byte
@@ -96,7 +101,11 @@ func reloadExtension(
 
 	targets, err = chromedp.Targets(ctx)
 	if err != nil {
-		log.Fatalf("error: targets2: %v", err)
+		return fmt.Errorf(
+			"swextreload: can't get targets for '%s' tab reload: %v",
+			extensionID,
+			err,
+		)
 	}
 
 	log.Printf("Targets: %#v", targets)
@@ -119,7 +128,11 @@ func reloadExtension(
 		chromedp.Evaluate(`chrome.tabs.reload();`, nil),
 	)
 	if err != nil {
-		log.Fatalf("error: run tabs: %v", err)
+		return fmt.Errorf(
+			"swextreload: error reloading tab '%s': %v",
+			extensionID,
+			err,
+		)
 	}
 
 	log.Printf("Tabs: %v", string(tabsResp))
