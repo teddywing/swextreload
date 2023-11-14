@@ -37,6 +37,10 @@ func Reload(
 		if err != nil {
 			return err
 		}
+
+		// TODO: Do the reload of the current page after reloading all
+		// extensions. The current system doesn't work well with multiple
+		// extensions.
 	}
 
 	return nil
