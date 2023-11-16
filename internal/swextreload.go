@@ -26,7 +26,6 @@ func Reload(
 	extensionIDs []string,
 	shouldReloadTab bool,
 ) error {
-	var targets []*target.Info
 	var err error
 
 	allocatorContext, cancel := chromedp.NewRemoteAllocator(
@@ -35,9 +34,23 @@ func Reload(
 	)
 	defer cancel()
 
+	ctx, cancel := chromedp.NewContext(allocatorContext)
+	defer cancel()
+
+	// TODO: I think get targets once first, and reload all extensions using those targets. Rather than getting targets for each extension reload.
+	targets, err := chromedp.Targets(ctx)
+	if err != nil {
+		return fmt.Errorf("swextreload: can't get targets: %v", err)
+	}
+
+	if isDebug {
+		log.Printf("Targets: %#v", targets)
+	}
+
 	for _, extensionID := range extensionIDs {
-		targets, err = reloadExtension(
-			allocatorContext,
+		err = reloadExtension(
+			ctx,
+			targets,
 			extensionID,
 			shouldReloadTab,
 		)
@@ -82,22 +95,10 @@ func Reload(
 // true, also reload the current tab.
 func reloadExtension(
 	ctx context.Context,
+	targets []*target.Info,
 	extensionID string,
 	shouldReloadTab bool,
-) ([]*target.Info, error) {
-	ctx, cancel := chromedp.NewContext(ctx)
-	defer cancel()
-
-	// TODO: I think get targets once first, and reload all extensions using those targets. Rather than getting targets for each extension reload.
-	targets, err := chromedp.Targets(ctx)
-	if err != nil {
-		return targets, fmt.Errorf("swextreload: can't get targets: %v", err)
-	}
-
-	if isDebug {
-		log.Printf("Targets: %#v", targets)
-	}
-
+) error {
 	extensionURL := "chrome-extension://" + extensionID + "/"
 
 	var targetID target.ID
@@ -112,23 +113,22 @@ func reloadExtension(
 		}
 	}
 
-	targetCtx, cancel := chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
+	targetCtx, _ := chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
 	// defer cancel()
 
 	log.Printf("Connected to target")
 
 	var runtimeResp []byte
-	err = chromedp.Run(
+	err := chromedp.Run(
 		targetCtx,
 		chromedp.Evaluate(`chrome.runtime.reload();`, &runtimeResp),
 	)
 	if err != nil {
-		return targets,
-			fmt.Errorf(
-				"swextreload: error reloading extension '%s': %v",
-				extensionID,
-				err,
-			)
+		return fmt.Errorf(
+			"swextreload: error reloading extension '%s': %v",
+			extensionID,
+			err,
+		)
 	}
 
 	log.Printf("Reloaded extension")
@@ -137,7 +137,7 @@ func reloadExtension(
 		log.Printf("Runtime: %v", string(runtimeResp))
 	}
 
-	return targets, nil
+	return nil
 }
 
 func reloadTab(
