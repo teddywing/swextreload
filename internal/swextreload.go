@@ -26,6 +26,7 @@ func Reload(
 	extensionIDs []string,
 	shouldReloadTab bool,
 ) error {
+	var targets []*target.Info
 	var err error
 
 	allocatorContext, cancel := chromedp.NewRemoteAllocator(
@@ -35,7 +36,7 @@ func Reload(
 	defer cancel()
 
 	for _, extensionID := range extensionIDs {
-		err = reloadExtension(
+		targets, err = reloadExtension(
 			allocatorContext,
 			extensionID,
 			shouldReloadTab,
@@ -52,7 +53,22 @@ func Reload(
 	if shouldReloadTab {
 		time.Sleep(200 * time.Millisecond)
 
-		err = reloadTab(allocatorContext, extensionIDs[0])
+		extensionURL := "chrome-extension://" + extensionIDs[0] + "/"
+
+		var firstExtensionTarget *target.Info
+		for _, target := range targets {
+			if strings.HasPrefix(target.URL, extensionURL) {
+				firstExtensionTarget = target
+
+				break
+			}
+		}
+
+		err = reloadTab(
+			allocatorContext,
+			extensionIDs[0],
+			isExtensionManifestV2(firstExtensionTarget),
+		)
 		if err != nil {
 			return err
 		}
@@ -67,13 +83,13 @@ func reloadExtension(
 	ctx context.Context,
 	extensionID string,
 	shouldReloadTab bool,
-) error {
+) ([]*target.Info, error) {
 	ctx, cancel := chromedp.NewContext(ctx)
 	defer cancel()
 
 	targets, err := chromedp.Targets(ctx)
 	if err != nil {
-		return fmt.Errorf("swextreload: can't get targets: %v", err)
+		return targets, fmt.Errorf("swextreload: can't get targets: %v", err)
 	}
 
 	if isDebug {
@@ -97,63 +113,79 @@ func reloadExtension(
 	targetCtx, cancel := chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
 	defer cancel()
 
+	log.Printf("Connected to target")
+
 	var runtimeResp []byte
 	err = chromedp.Run(
 		targetCtx,
-		chromedp.Evaluate(`chrome.runtime.reload();`, nil),
+		chromedp.Evaluate(`chrome.runtime.reload();`, &runtimeResp),
 	)
 	if err != nil {
-		return fmt.Errorf(
-			"swextreload: error reloading extension '%s': %v",
-			extensionID,
-			err,
-		)
+		return targets,
+			fmt.Errorf(
+				"swextreload: error reloading extension '%s': %v",
+				extensionID,
+				err,
+			)
 	}
+
+	log.Printf("Reloaded extension")
 
 	if isDebug {
 		log.Printf("Runtime: %v", string(runtimeResp))
 	}
 
-	return nil
+	return targets, nil
 }
 
-func reloadTab(ctx context.Context, extensionID string) error {
+func reloadTab(
+	ctx context.Context,
+	extensionID string,
+	isExtensionManifestV2 bool,
+) error {
 	ctx, cancel := chromedp.NewContext(ctx)
 	defer cancel()
 
-	targets, err := chromedp.Targets(ctx)
-	if err != nil {
-		return fmt.Errorf(
-			"swextreload: can't get targets for '%s' tab reload: %v",
-			extensionID,
-			err,
-		)
-	}
-
 	if isDebug {
-		log.Printf("Targets: %#v", targets)
+		log.Printf("Reload tab (Manifest V2: %t)", isExtensionManifestV2)
 	}
 
-	extensionURL := "chrome-extension://" + extensionID + "/"
-
-	var targetID target.ID
-	for _, target := range targets {
-		if strings.HasPrefix(target.URL, extensionURL) {
-			if isDebug {
-				log.Printf("Target: %#v", target)
-			}
-
-			targetID = target.TargetID
-			break
+	if !isExtensionManifestV2 {
+		// TODO: If MV2, then don't re-attach, only do it if "service_worker"
+		targets, err := chromedp.Targets(ctx)
+		if err != nil {
+			return fmt.Errorf(
+				"swextreload: can't get targets for '%s' tab reload: %v",
+				extensionID,
+				err,
+			)
 		}
-	}
 
-	targetCtx, cancel := chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
-	defer cancel()
+		if isDebug {
+			log.Printf("Targets: %#v", targets)
+		}
+
+		extensionURL := "chrome-extension://" + extensionID + "/"
+
+		var targetID target.ID
+		for _, target := range targets {
+			if strings.HasPrefix(target.URL, extensionURL) {
+				if isDebug {
+					log.Printf("Target: %#v", target)
+				}
+
+				targetID = target.TargetID
+				break
+			}
+		}
+
+		ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
+		defer cancel()
+	}
 
 	var tabsResp []byte
-	err = chromedp.Run(
-		targetCtx,
+	err := chromedp.Run(
+		ctx,
 		chromedp.Evaluate(`chrome.tabs.reload();`, nil),
 	)
 	if err != nil {
@@ -169,4 +201,8 @@ func reloadTab(ctx context.Context, extensionID string) error {
 	}
 
 	return nil
+}
+
+func isExtensionManifestV2(target *target.Info) bool {
+	return target.Type == "background_page"
 }
