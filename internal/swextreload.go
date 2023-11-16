@@ -101,40 +101,36 @@ func reloadExtension(
 ) error {
 	extensionURL := "chrome-extension://" + extensionID + "/"
 
-	var targetID target.ID
 	for _, target := range targets {
 		if strings.HasPrefix(target.URL, extensionURL) {
 			if isDebug {
 				log.Printf("Target: %#v", target)
 			}
 
-			targetID = target.TargetID
-			break
+			targetCtx, _ := chromedp.NewContext(ctx, chromedp.WithTargetID(target.TargetID))
+			// defer cancel()
+
+			log.Printf("Connected to target '%s'", target.TargetID)
+
+			var runtimeResp []byte
+			err := chromedp.Run(
+				targetCtx,
+				chromedp.Evaluate(`chrome.runtime.reload();`, nil),
+			)
+			if err != nil {
+				return fmt.Errorf(
+					"swextreload: error reloading extension '%s': %v",
+					extensionID,
+					err,
+				)
+			}
+
+			log.Printf("Reloaded extension")
+
+			if isDebug {
+				log.Printf("Runtime: %v", string(runtimeResp))
+			}
 		}
-	}
-
-	targetCtx, _ := chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
-	// defer cancel()
-
-	log.Printf("Connected to target '%s'", targetID)
-
-	var runtimeResp []byte
-	err := chromedp.Run(
-		targetCtx,
-		chromedp.Evaluate(`chrome.runtime.reload();`, nil),
-	)
-	if err != nil {
-		return fmt.Errorf(
-			"swextreload: error reloading extension '%s': %v",
-			extensionID,
-			err,
-		)
-	}
-
-	log.Printf("Reloaded extension")
-
-	if isDebug {
-		log.Printf("Runtime: %v", string(runtimeResp))
 	}
 
 	return nil
