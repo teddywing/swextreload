@@ -67,6 +67,7 @@ func Reload(
 		err = reloadTab(
 			allocatorContext,
 			extensionIDs[0],
+			firstExtensionTarget,
 			isExtensionManifestV2(firstExtensionTarget),
 		)
 		if err != nil {
@@ -111,7 +112,7 @@ func reloadExtension(
 	}
 
 	targetCtx, cancel := chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
-	defer cancel()
+	// defer cancel()
 
 	log.Printf("Connected to target")
 
@@ -141,6 +142,7 @@ func reloadExtension(
 func reloadTab(
 	ctx context.Context,
 	extensionID string,
+	letarget *target.Info,
 	isExtensionManifestV2 bool,
 ) error {
 	ctx, cancel := chromedp.NewContext(ctx)
@@ -182,6 +184,9 @@ func reloadTab(
 		ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
 		defer cancel()
 	}
+
+	ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(letarget.TargetID))
+	// defer cancel()
 
 	var tabsResp []byte
 	err := chromedp.Run(
