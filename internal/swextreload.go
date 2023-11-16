@@ -88,6 +88,7 @@ func reloadExtension(
 	ctx, cancel := chromedp.NewContext(ctx)
 	defer cancel()
 
+	// TODO: I think get targets once first, and reload all extensions using those targets. Rather than getting targets for each extension reload.
 	targets, err := chromedp.Targets(ctx)
 	if err != nil {
 		return targets, fmt.Errorf("swextreload: can't get targets: %v", err)
