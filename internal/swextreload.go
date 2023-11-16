@@ -116,12 +116,12 @@ func reloadExtension(
 	targetCtx, _ := chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
 	// defer cancel()
 
-	log.Printf("Connected to target")
+	log.Printf("Connected to target '%s'", targetID)
 
 	var runtimeResp []byte
 	err := chromedp.Run(
 		targetCtx,
-		chromedp.Evaluate(`chrome.runtime.reload();`, &runtimeResp),
+		chromedp.Evaluate(`chrome.runtime.reload();`, nil),
 	)
 	if err != nil {
 		return fmt.Errorf(
