@@ -180,14 +180,14 @@ func reloadTab(
 
 		ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
 		defer cancel()
-	}
+	} else {
+		if isDebug {
+			log.Printf("Connecting to target %s", letarget.TargetID)
+		}
 
-	if isDebug {
-		log.Printf("Connecting to target %s", letarget.TargetID)
+		ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(letarget.TargetID))
+		// defer cancel()
 	}
-
-	ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(letarget.TargetID))
-	// defer cancel()
 
 	var tabsResp []byte
 	err := chromedp.Run(
