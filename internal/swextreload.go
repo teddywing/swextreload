@@ -107,8 +107,8 @@ func reloadExtension(
 				log.Printf("Target: %#v", target)
 			}
 
-			targetCtx, _ := chromedp.NewContext(ctx, chromedp.WithTargetID(target.TargetID))
-			// defer cancel()
+			targetCtx, cancel := chromedp.NewContext(ctx, chromedp.WithTargetID(target.TargetID))
+			defer cancel()
 
 			log.Printf("Connected to target '%s'", target.TargetID)
 
@@ -180,6 +180,10 @@ func reloadTab(
 
 		ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
 		defer cancel()
+	}
+
+	if isDebug {
+		log.Printf("Connecting to target %s", letarget.TargetID)
 	}
 
 	ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(letarget.TargetID))
