@@ -68,8 +68,18 @@ func Reload(
 
 		var firstExtensionTarget *target.Info
 		for _, target := range targets {
+		// for i := len(targets) - 1; i >= 0; i-- {
+
+			logDebugf("A target: %#v", target)
+
 			if strings.HasPrefix(target.URL, extensionURL) {
 				firstExtensionTarget = target
+
+				logDebugf(
+					"firstExtensionTarget %s: %#v",
+					extensionURL,
+					firstExtensionTarget,
+				)
 
 				break
 			}
