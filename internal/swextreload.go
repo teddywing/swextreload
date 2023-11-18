@@ -43,9 +43,7 @@ func Reload(
 		return fmt.Errorf("swextreload: can't get targets: %v", err)
 	}
 
-	if isDebug {
-		log.Printf("Targets: %#v", targets)
-	}
+	logDebugf("Targets: %#v", targets)
 
 	for _, extensionID := range extensionIDs {
 		err = reloadExtension(
@@ -103,14 +101,12 @@ func reloadExtension(
 
 	for _, target := range targets {
 		if strings.HasPrefix(target.URL, extensionURL) {
-			if isDebug {
-				log.Printf("Target: %#v", target)
-			}
+			logDebugf("Target: %#v", target)
 
 			targetCtx, cancel := chromedp.NewContext(ctx, chromedp.WithTargetID(target.TargetID))
 			defer cancel()
 
-			log.Printf("Connected to target '%s'", target.TargetID)
+			logDebugf("Connected to target '%s'", target.TargetID)
 
 			var runtimeResp []byte
 			err := chromedp.Run(
@@ -125,11 +121,9 @@ func reloadExtension(
 				)
 			}
 
-			log.Printf("Reloaded extension")
+			logDebugf("Reloaded extension")
 
-			if isDebug {
-				log.Printf("Runtime: %v", string(runtimeResp))
-			}
+			logDebugf("Runtime: %v", string(runtimeResp))
 		}
 	}
 
@@ -145,9 +139,7 @@ func reloadTab(
 	ctx, cancel := chromedp.NewContext(ctx)
 	defer cancel()
 
-	if isDebug {
-		log.Printf("Reload tab (Manifest V2: %t)", isExtensionManifestV2)
-	}
+	logDebugf("Reload tab (Manifest V2: %t)", isExtensionManifestV2)
 
 	if !isExtensionManifestV2 {
 		// TODO: If MV2, then don't re-attach, only do it if "service_worker"
@@ -160,18 +152,14 @@ func reloadTab(
 			)
 		}
 
-		if isDebug {
-			log.Printf("Targets: %#v", targets)
-		}
+		logDebugf("Targets: %#v", targets)
 
 		extensionURL := "chrome-extension://" + extensionID + "/"
 
 		var targetID target.ID
 		for _, target := range targets {
 			if strings.HasPrefix(target.URL, extensionURL) {
-				if isDebug {
-					log.Printf("Target: %#v", target)
-				}
+				logDebugf("Target: %#v", target)
 
 				targetID = target.TargetID
 				break
@@ -181,9 +169,7 @@ func reloadTab(
 		ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
 		defer cancel()
 	} else {
-		if isDebug {
-			log.Printf("Connecting to target %s", letarget.TargetID)
-		}
+		logDebugf("Connecting to target %s", letarget.TargetID)
 
 		ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(letarget.TargetID))
 		// defer cancel()
@@ -202,13 +188,20 @@ func reloadTab(
 		)
 	}
 
-	if isDebug {
-		log.Printf("Tabs: %v", string(tabsResp))
-	}
+	logDebugf("Tabs: %v", string(tabsResp))
 
 	return nil
 }
 
 func isExtensionManifestV2(target *target.Info) bool {
 	return target.Type == "background_page"
+}
+
+// logDebugf prints a debug log if isDebug is on.
+func logDebugf(format string, v ...any) {
+	if !isDebug {
+		return
+	}
+
+	log.Printf(format, v...)
 }
