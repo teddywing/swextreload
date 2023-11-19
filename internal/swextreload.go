@@ -3,6 +3,7 @@ package swextreload
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -66,15 +67,13 @@ func Reload(
 	}
 
 	if shouldReloadTab {
-		time.Sleep(200 * time.Millisecond)
-
 		extensionURL := "chrome-extension://" + extensionIDs[0] + "/"
 
 		var firstExtensionTarget *target.Info
 		for _, target := range targets {
-		// for i := len(targets) - 1; i >= 0; i-- {
+			// for i := len(targets) - 1; i >= 0; i-- {
 
-			logDebugf("A target: %#v", target)
+			// logDebugf("A target: %#v", target)
 
 			if strings.HasPrefix(target.URL, extensionURL) {
 				firstExtensionTarget = target
@@ -89,11 +88,23 @@ func Reload(
 			}
 		}
 
+		if firstExtensionTarget == nil {
+			// TODO: continue loop until target != null
+			return errors.New("swextreload: can't reload tab, no target available")
+		}
+
+		isMV2 := isExtensionManifestV2(firstExtensionTarget)
+
+		// TODO: Only do this in MV3.
+		if !isMV2 {
+			time.Sleep(200 * time.Millisecond)
+		}
+
 		err = reloadTab(
 			allocatorContext,
 			extensionIDs[0],
 			firstExtensionTarget,
-			isExtensionManifestV2(firstExtensionTarget),
+			isMV2,
 		)
 		if err != nil {
 			return err
@@ -151,7 +162,7 @@ func reloadTab(
 	isExtensionManifestV2 bool,
 ) error {
 	ctx, cancel := chromedp.NewContext(ctx)
-	defer cancel()
+	// defer cancel()
 
 	logDebugf("Reload tab (Manifest V2: %t)", isExtensionManifestV2)
 
