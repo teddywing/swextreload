@@ -86,7 +86,8 @@ func Reload(
 
 		isMV2 := isExtensionManifestV2(firstExtensionTarget)
 
-		// TODO: Only do this in MV3.
+		// In Manifest V3, we need to wait until the service worker reinstalls
+		// before we can re-attach to it.
 		if !isMV2 {
 			time.Sleep(200 * time.Millisecond)
 		}
