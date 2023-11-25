@@ -30,9 +30,9 @@ func Reload(
 	var err error
 
 	allocatorContext, _ := chromedp.NewRemoteAllocator(
-			context.Background(),
-			url,
-		)
+		context.Background(),
+		url,
+	)
 	allocatorContext, cancel := context.WithTimeout(
 		allocatorContext,
 		5*time.Second,
