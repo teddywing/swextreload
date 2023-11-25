@@ -42,7 +42,6 @@ func Reload(
 	ctx, cancel := chromedp.NewContext(allocatorContext)
 	defer cancel()
 
-	// TODO: I think get targets once first, and reload all extensions using those targets. Rather than getting targets for each extension reload.
 	targets, err := chromedp.Targets(ctx)
 	if err != nil {
 		return fmt.Errorf("swextreload: can't get targets: %v", err)
@@ -60,10 +59,6 @@ func Reload(
 		if err != nil {
 			return err
 		}
-
-		// TODO: Do the reload of the current page after reloading all
-		// extensions. The current system doesn't work well with multiple
-		// extensions.
 	}
 
 	if shouldReloadTab {
@@ -71,10 +66,6 @@ func Reload(
 
 		var firstExtensionTarget *target.Info
 		for _, target := range targets {
-			// for i := len(targets) - 1; i >= 0; i-- {
-
-			// logDebugf("A target: %#v", target)
-
 			if strings.HasPrefix(target.URL, extensionURL) {
 				firstExtensionTarget = target
 
