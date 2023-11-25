@@ -9,7 +9,8 @@ development.
 Communicates with Chrome over the [DevTools Protocol].
 
 This program is a rewrite of [Extreload] to add support for Manifest V3
-extensions.
+extensions. Swextreload doesn’t work reliably with Manifest V2 extensions, so
+you may want to continue using Extreload in that case.
 
 
 ## Usage
