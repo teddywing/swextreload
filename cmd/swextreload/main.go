@@ -28,6 +28,8 @@ import (
 	swextreload "gopkg.teddywing.com/swextreload/internal"
 )
 
+const programVersion = "0.0.1"
+
 func main() {
 	args, err := claw.Parse(&claw.Options{
 		Name:        "swextreload",
@@ -48,6 +50,7 @@ func main() {
 				LongName:    "version",
 				ShortName:   'V',
 				Type:        "bool",
+				DefaultValue: false,
 				Description: "show the program version",
 			},
 			{
@@ -74,6 +77,12 @@ func main() {
 			err,
 		)
 		os.Exit(sysexits.DataErr)
+	}
+
+	version := args["version"].(bool)
+	if version {
+		fmt.Println(programVersion)
+		os.Exit(sysexits.OK)
 	}
 
 	socket_url, ok := args["socket-url"].(string)
