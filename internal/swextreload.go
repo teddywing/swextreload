@@ -147,13 +147,13 @@ func reloadExtension(
 func reloadTab(
 	ctx context.Context,
 	extensionID string,
-	letarget *target.Info,
+	reloadTarget *target.Info,
 ) error {
 	// Don't cancel the context. Otherwise, the background page DevTools
 	// window closes.
 	ctx, cancel := chromedp.NewContext(ctx)
 
-	isMV2 := isExtensionManifestV2(letarget)
+	isMV2 := isExtensionManifestV2(reloadTarget)
 	logDebugf("Reload tab (Manifest V2: %t)", isMV2)
 
 	// If the extension is Manifest V3, its `targetId` reset after we reloaded
@@ -190,11 +190,14 @@ func reloadTab(
 		ctx, cancel = chromedp.NewContext(ctx, chromedp.WithTargetID(targetID))
 		defer cancel()
 	} else {
-		logDebugf("Connecting to target %s", letarget.TargetID)
+		logDebugf("Connecting to target %s", reloadTarget.TargetID)
 
 		// Don't cancel the context. Otherwise, the background page DevTools
 		// window closes.
-		ctx, _ = chromedp.NewContext(ctx, chromedp.WithTargetID(letarget.TargetID))
+		ctx, _ = chromedp.NewContext(
+			ctx,
+			chromedp.WithTargetID(reloadTarget.TargetID),
+		)
 	}
 
 	var tabsResp []byte
