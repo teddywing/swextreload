@@ -84,11 +84,9 @@ func Reload(
 			return errors.New("swextreload: can't reload tab, no target available")
 		}
 
-		isMV2 := isExtensionManifestV2(firstExtensionTarget)
-
 		// In Manifest V3, we need to wait until the service worker reinstalls
 		// before we can re-attach to it.
-		if !isMV2 {
+		if !isExtensionManifestV2(firstExtensionTarget) {
 			time.Sleep(200 * time.Millisecond)
 		}
 
@@ -96,7 +94,6 @@ func Reload(
 			allocatorContext,
 			extensionIDs[0],
 			firstExtensionTarget,
-			isMV2,
 		)
 		if err != nil {
 			return err
@@ -151,13 +148,13 @@ func reloadTab(
 	ctx context.Context,
 	extensionID string,
 	letarget *target.Info,
-	isExtensionManifestV2 bool,
 ) error {
 	// Don't cancel the context. Otherwise, the background page DevTools
 	// window closes.
 	ctx, cancel := chromedp.NewContext(ctx)
 
-	logDebugf("Reload tab (Manifest V2: %t)", isExtensionManifestV2)
+	isMV2 := isExtensionManifestV2(letarget)
+	logDebugf("Reload tab (Manifest V2: %t)", isMV2)
 
 	// If the extension is Manifest V3, its `targetId` reset after we reloaded
 	// the extension from the service worker, presumably because it was
@@ -166,7 +163,7 @@ func reloadTab(
 	//
 	// If the extension is Manifest V2, we can just reconnect to the existing
 	// target.
-	if !isExtensionManifestV2 {
+	if !isMV2 {
 		targets, err := chromedp.Targets(ctx)
 		if err != nil {
 			return fmt.Errorf(
