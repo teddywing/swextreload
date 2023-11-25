@@ -158,8 +158,14 @@ func reloadTab(
 
 	logDebugf("Reload tab (Manifest V2: %t)", isExtensionManifestV2)
 
+	// If the extension is Manifest V3, its `targetId` reset after we reloaded
+	// the extension from the service worker, presumably because it was
+	// reinstalled. In that case, we need to get targets again, find the new
+	// `targetId`, and connect to it.
+	//
+	// If the extension is Manifest V2, we can just reconnect to the existing
+	// target.
 	if !isExtensionManifestV2 {
-		// TODO: If MV2, then don't re-attach, only do it if "service_worker"
 		targets, err := chromedp.Targets(ctx)
 		if err != nil {
 			return fmt.Errorf(
