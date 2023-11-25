@@ -144,6 +144,8 @@ func reloadExtension(
 	return nil
 }
 
+// reloadTab reloads the current Chrome tab using the background console of
+// either extensionID or reloadTarget.
 func reloadTab(
 	ctx context.Context,
 	extensionID string,
