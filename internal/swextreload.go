@@ -62,38 +62,46 @@ func Reload(
 	}
 
 	if shouldReloadTab {
-		extensionURL := "chrome-extension://" + extensionIDs[0] + "/"
+		var firstAvailableExtensionTarget *target.Info
 
-		var firstExtensionTarget *target.Info
+	targetsLoop:
 		for _, target := range targets {
-			if strings.HasPrefix(target.URL, extensionURL) {
-				firstExtensionTarget = target
+			for _, extensionID := range extensionIDs {
+				extensionURL := "chrome-extension://" + extensionID + "/"
 
-				logDebugf(
-					"firstExtensionTarget %s: %#v",
-					extensionURL,
-					firstExtensionTarget,
-				)
+				if strings.HasPrefix(target.URL, extensionURL) {
+					// Keep going until we find an available target.
+					if target == nil {
+						continue targetsLoop
+					}
 
-				break
+					firstAvailableExtensionTarget = target
+
+					logDebugf(
+						"firstAvailableExtensionTarget %s: %#v",
+						extensionURL,
+						firstAvailableExtensionTarget,
+					)
+
+					break targetsLoop
+				}
 			}
 		}
 
-		if firstExtensionTarget == nil {
-			// TODO: continue loop until target != null
+		if firstAvailableExtensionTarget == nil {
 			return errors.New("swextreload: can't reload tab, no target available")
 		}
 
 		// In Manifest V3, we need to wait until the service worker reinstalls
 		// before we can re-attach to it.
-		if !isExtensionManifestV2(firstExtensionTarget) {
+		if !isExtensionManifestV2(firstAvailableExtensionTarget) {
 			time.Sleep(200 * time.Millisecond)
 		}
 
 		err = reloadTab(
 			allocatorContext,
 			extensionIDs[0],
-			firstExtensionTarget,
+			firstAvailableExtensionTarget,
 		)
 		if err != nil {
 			return err
