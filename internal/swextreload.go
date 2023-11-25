@@ -218,6 +218,7 @@ func reloadTab(
 	return nil
 }
 
+// isExtensionManifestV2 returns true if target is a Manifest V2 extension.
 func isExtensionManifestV2(target *target.Info) bool {
 	return target.Type == "background_page"
 }
